@@ -66,7 +66,7 @@ void FisheyeToEquirectangular::updateMap(const unsigned int& fisheyeSide,
             
             float tetha = M_PI * x * 0.5f;
 
-			if (abs(tetha) >= (mFisheyeAngle * 0.5f))
+			if (fabsf(tetha) >= (mFisheyeAngle * 0.5f))
 				continue;
 
             float phi = M_PI * y * 0.5f;

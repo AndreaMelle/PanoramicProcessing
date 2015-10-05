@@ -15,7 +15,7 @@ float fisheyeAngle = 180.0f * (float)M_PI  / 180.0f;
 int radius = 1;
 cv::Point2i center;
 int dstWidth;
-int guiDownsamples = 4;
+int guiDownsamples = 2;
 int shiftRes = 1;
 
 pp::FisheyeToEquirectangular gFisheyeToEquirectangular;
@@ -44,6 +44,17 @@ int main( int argc, char** argv )
 {
 	assert(argc >= 3);
     src = imread(argv[1], 1 );
+    
+    //make square!
+    int maxSide = std::max(src.cols, src.rows);
+    maxSide = (maxSide % 2 ==0) ? maxSide : (maxSide + 1);
+    
+    cv::Mat temp;
+    src.copyTo(temp);
+    src.create(maxSide, maxSide, src.type());
+    
+    temp.copyTo(src(cv::Rect((maxSide - temp.cols) / 2, (maxSide - temp.rows) / 2, temp.cols, temp.rows)));
+    
 	fisheyeAngle = (float)atof(argv[2]) * (float)M_PI / 180.0f;
 
 	if (argc >= 4)
