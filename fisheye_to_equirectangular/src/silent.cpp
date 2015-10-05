@@ -1,26 +1,26 @@
-#include "opencv2/highgui/highgui.hpp"
+#define _USE_MATH_DEFINES
+#include <cmath>
 #include "opencv2/imgproc/imgproc.hpp"
 #include <iostream>
 #include <stdio.h>
 #include "projectionTransform.h"
-#include <iomanip>
 
 using namespace cv;
 
-pp::FisheyeToEquirectangular gFisheyeToEquirectangular;
-pp::FisheyeCropUtils gFisheyeCropUtils;
-
 int main( int argc, char** argv )
 {
+	pp::FisheyeToEquirectangular gFisheyeToEquirectangular;
+	pp::FisheyeCropUtils gFisheyeCropUtils;
+
     assert(argc == 7);
     
     std::string filename = argv[1];
     
     cv::Point2i center(atoi(argv[2]), atoi(argv[3]));
     int radius = atoi(argv[4]);
-    float fisheyeAngle =  atof(argv[5]) * M_PI  / 180.0f;
+    float fisheyeAngle =  (float)atof(argv[5]) * M_PI  / 180.0f;
     
-    std::string outdir = argv[6];
+    std::string outfile = argv[6];
     
     Mat src, dst, crop;
     int dstWidth;
@@ -40,11 +40,9 @@ int main( int argc, char** argv )
     gFisheyeToEquirectangular.updateMap(crop.rows, fisheyeAngle, dstWidth);
     gFisheyeToEquirectangular.transform(crop, dst);
     
-    std::stringstream ss;
-    ss << outdir << "equi_" << argv[1];
-    imwrite(ss.str(), dst);
+
+    imwrite(outfile, dst);
     
-    std::cout << ss.str() << std::endl;
     
     return 0;
 }

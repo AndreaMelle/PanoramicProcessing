@@ -9,6 +9,7 @@
 #include "projectionTransform.h"
 #include <assert.h>
 
+
 using namespace pp;
 
 void FisheyeToEquirectangular::transform(const cv::Mat& src, cv::Mat& dst, const int& interpolationMode)
@@ -24,7 +25,7 @@ void FisheyeToEquirectangular::transform(const cv::Mat& src, cv::Mat& dst, const
         updateMap(src.rows, mFisheyeAngle, mEquirectWidth);
     }
     
-    cv::remap(src, dst, mMapX, mMapY, interpolationMode, cv::BORDER_CONSTANT, cv::Scalar(0,0, 0) );
+    cv::remap(src, dst, mMapX, mMapY, interpolationMode, cv::BORDER_CONSTANT, cv::Scalar(0,0,0) );
 }
 
 void FisheyeToEquirectangular::updateMap(const unsigned int& fisheyeSide,
@@ -56,7 +57,7 @@ void FisheyeToEquirectangular::updateMap(const unsigned int& fisheyeSide,
     
     for( int j = 0; j < equirectSize.height; j++ )
     {
-        for( int i = equirectSize.width / 4; i < 3 * equirectSize.width / 4; i++ )
+        for( int i = 0; i < equirectSize.width; i++ )
         {
             // i is from 0 to dst.cols
             // need to transform to -2 to +2 for equation
@@ -64,6 +65,10 @@ void FisheyeToEquirectangular::updateMap(const unsigned int& fisheyeSide,
             float y = (((float)j / equirectSize.height) - 0.5f) * -2.0f;
             
             float tetha = M_PI * x * 0.5f;
+
+			if (abs(tetha) >= (mFisheyeAngle * 0.5f))
+				continue;
+
             float phi = M_PI * y * 0.5f;
             
             float px = cosf(phi) * sinf(tetha);
@@ -89,6 +94,7 @@ void FisheyeToEquirectangular::updateMap(const unsigned int& fisheyeSide,
 FisheyeCropUtils::FisheyeCropUtils()
     : mMaxRadius(0)
     , mMaxShift(0)
+	, mMinRadius(1)
 {
     
 }

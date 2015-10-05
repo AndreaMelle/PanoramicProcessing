@@ -9,6 +9,8 @@
 #ifndef projectionTransform_h
 #define projectionTransform_h
 
+#define _USE_MATH_DEFINES
+#include <cmath>
 #include <stdio.h>
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
@@ -22,6 +24,8 @@ namespace pp
     class FisheyeToEquirectangular
     {
     public:
+		FisheyeToEquirectangular() {}
+		virtual ~FisheyeToEquirectangular() {}
         
         /** @brief Transforms fisheye image into equirectangular, reallocating arrays if needed
          
@@ -59,7 +63,8 @@ namespace pp
     class FisheyeCropUtils
     {
     public:
-        FisheyeCropUtils();
+		FisheyeCropUtils();
+		virtual ~FisheyeCropUtils() {}
         
         unsigned int mMinRadius; // 1
         unsigned int mMaxRadius; // will determinte max crop canvas side together with max shift
