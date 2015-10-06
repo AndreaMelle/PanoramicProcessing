@@ -9,7 +9,7 @@
 using namespace cv;
 
 /// Global variables
-Mat src, dst, viz, vizSmall, dstSmall, crop;
+Mat src, dst, viz, vizSmall, dstSmall;
 
 float fisheyeAngle = 180.0f * (float)M_PI  / 180.0f;
 int radius = 1;
@@ -19,17 +19,12 @@ int guiDownsamples = 2;
 int shiftRes = 1;
 
 pp::FisheyeToEquirectangular gFisheyeToEquirectangular;
-pp::FisheyeCropUtils gFisheyeCropUtils;
 
 /// Function Headers
 void update_map(const cv::Mat& src, const cv::Mat& dst, cv::Mat& map_x, cv::Mat& map_y);
 
-void recompute( int, void* )
+void updateViz( int, void* )
 {
-    gFisheyeCropUtils.crop(src, crop, radius, center);
-    gFisheyeToEquirectangular.updateMap(crop.rows, fisheyeAngle);
-    gFisheyeToEquirectangular.transform(crop, dst);
-    
     src.copyTo(viz);
     cv::circle(viz, Point(viz.cols / 2, viz.rows / 2) + center, radius, Scalar(0, 0, 255.0), 1);
     cv::circle(viz, Point(viz.cols / 2, viz.rows / 2) + center, 5, Scalar(0, 0, 255.0), -1);
@@ -43,17 +38,7 @@ void recompute( int, void* )
 int main( int argc, char** argv )
 {
 	assert(argc >= 3);
-    src = imread(argv[1], 1 );
-    
-    //make square!
-    int maxSide = std::max(src.cols, src.rows);
-    maxSide = (maxSide % 2 ==0) ? maxSide : (maxSide + 1);
-    
-    cv::Mat temp;
-    src.copyTo(temp);
-    src.create(maxSide, maxSide, src.type());
-    
-    temp.copyTo(src(cv::Rect((maxSide - temp.cols) / 2, (maxSide - temp.rows) / 2, temp.cols, temp.rows)));
+    cv::flip(imread(argv[1], 1 ), src, -1);
     
 	fisheyeAngle = (float)atof(argv[2]) * (float)M_PI / 180.0f;
 
@@ -62,14 +47,8 @@ int main( int argc, char** argv )
 	if (argc >= 5)
 		shiftRes = atoi(argv[4]);
 
-    dstWidth = src.cols * 2;
-    radius = src.rows / 2;
+	radius = (std::min(src.cols, src.rows) / 2) * 2;
     center = cv::Point2i(0,0);
-    
-    gFisheyeCropUtils.mMaxShift = radius / 2;
-    gFisheyeCropUtils.mMaxRadius = radius + gFisheyeCropUtils.mMaxShift;
-
-	shiftRes = std::min<unsigned int>(shiftRes, gFisheyeCropUtils.mMaxShift);
     
 	if (argc >= 6)
 		center.x = atoi(argv[5]);
@@ -80,13 +59,13 @@ int main( int argc, char** argv )
 	if (argc >= 8)
 		radius = atoi(argv[7]);
 
-    recompute(0, 0);
-    
+	gFisheyeToEquirectangular.transform(src, dst, fisheyeAngle, radius, center);
+	updateViz(0, 0);
     
     /// Create window
     namedWindow( "equirectangular", CV_WINDOW_AUTOSIZE );
     namedWindow( "fisheye", CV_WINDOW_AUTOSIZE );
-    createTrackbar( "fisheye radius", "fisheye", &radius, gFisheyeCropUtils.mMaxRadius, recompute );
+    createTrackbar( "fisheye radius", "fisheye", &radius, gFisheyeToEquirectangular.getMaxRadius(src), updateViz );
     
     /// Loop
     while( true )
@@ -106,34 +85,41 @@ int main( int argc, char** argv )
         else if ((char)c == 'w')
         {
 			center += cv::Point2i(0, -shiftRes);
-            recompute(0, 0);
-        }
+			updateViz(0, 0);
+		}
         
         else if ((char)c == 's')
         {
 			center += cv::Point2i(0, shiftRes);
-            recompute(0, 0);
-        }
+			updateViz(0, 0);
+		}
         
         else if ((char)c == 'a')
         {
 			center += cv::Point2i(-shiftRes, 0);
-            recompute(0, 0);
-        }
+			updateViz(0, 0);
+		}
         
         else if ((char)c == 'd')
         {
 			center += cv::Point2i(shiftRes, 0);
-            recompute(0, 0);
+			updateViz(0, 0);
+
         }
         
         else if ((char)c == 'r')
         {
             center = cv::Point2i(0,0);
             radius = src.rows / 2;
-            recompute(0, 0);
+			updateViz(0, 0);
         }
-        
+
+		else if ((char)c == 'g')
+		{
+			gFisheyeToEquirectangular.transform(src, dst, fisheyeAngle, radius, center);
+			updateViz(0, 0);
+		}
+
         imshow( "equirectangular", dstSmall );
         imshow( "fisheye", vizSmall);
     }

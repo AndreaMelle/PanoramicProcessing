@@ -43,7 +43,7 @@ def main(argv):
 
 			outFilePath = join(outDir, f);
 
-			process = "../builds/win/fisheye_to_equirectangular_batch/x64/Release/fisheye_to_equirectangular_batch.exe " + inFilePath + " 0 0 512 180 " + outFilePath
+			process = "../builds/win/fisheye_to_equirectangular_batch/x64/Release/fisheye_to_equirectangular_batch.exe " + inFilePath + " -10 80 1250 220 " + outFilePath
 			subprocess.call(process, stdout=FNULL, stderr=FNULL, shell=False)
 
 			print inFilePath + ' >> ' + outFilePath

@@ -15,6 +15,8 @@ int main( int argc, char** argv )
     assert(argc == 7);
     
     std::string filename = argv[1];
+
+
     
     cv::Point2i center(atoi(argv[2]), atoi(argv[3]));
     int radius = atoi(argv[4]);
@@ -26,22 +28,33 @@ int main( int argc, char** argv )
     int dstWidth;
     
     src = imread(filename, 1 );
+
+	//make square!
+	int maxSide = std::max(src.cols, src.rows);
+	maxSide = (maxSide % 2 == 0) ? maxSide : (maxSide + 1);
+
+	cv::Mat temp;
+	src.copyTo(temp);
+	src.create(maxSide, maxSide, src.type());
+	src.setTo(cv::Scalar(0, 0, 0));
+	temp.copyTo(src(cv::Rect((maxSide - temp.cols) / 2, (maxSide - temp.rows) / 2, temp.cols, temp.rows)));
+
     
     //cout << setfill('0') << setw(5) << 25;
-    
-    dstWidth = src.cols * 2;
-    radius = src.rows / 2;
-    center = cv::Point2i(0,0);
+   
     
     gFisheyeCropUtils.mMaxShift = radius / 2;
     gFisheyeCropUtils.mMaxRadius = radius + gFisheyeCropUtils.mMaxShift;
     
     gFisheyeCropUtils.crop(src, crop, radius, center);
-    gFisheyeToEquirectangular.updateMap(crop.rows, fisheyeAngle, dstWidth);
+    gFisheyeToEquirectangular.updateMap(crop.rows, fisheyeAngle);
     gFisheyeToEquirectangular.transform(crop, dst);
     
+	std::vector<int> compression_params;
+	compression_params.push_back(CV_IMWRITE_JPEG_QUALITY);
+	compression_params.push_back(100);
 
-    imwrite(outfile, dst);
+    imwrite(outfile, dst, compression_params);
     
     
     return 0;
