@@ -40,7 +40,9 @@ int main( int argc, char** argv )
 	assert(argc >= 3);
     cv::flip(imread(argv[1], 1 ), src, -1);
     
-	fisheyeAngle = (float)atof(argv[2]) * (float)M_PI / 180.0f;
+    //src = imread(argv[1], 1 );
+	
+    fisheyeAngle = (float)atof(argv[2]) * (float)M_PI / 180.0f;
 
 	if (argc >= 4)
 		guiDownsamples = atoi(argv[3]);
@@ -59,13 +61,13 @@ int main( int argc, char** argv )
 	if (argc >= 8)
 		radius = atoi(argv[7]);
 
-	gFisheyeToEquirectangular.transform(src, dst, fisheyeAngle, radius, center);
+	gFisheyeToEquirectangular.apply(src, dst, fisheyeAngle, radius, center);
 	updateViz(0, 0);
     
     /// Create window
     namedWindow( "equirectangular", CV_WINDOW_AUTOSIZE );
     namedWindow( "fisheye", CV_WINDOW_AUTOSIZE );
-    createTrackbar( "fisheye radius", "fisheye", &radius, gFisheyeToEquirectangular.getMaxRadius(src), updateViz );
+    createTrackbar( "fisheye radius", "fisheye", &radius, src.cols, updateViz );
     
     /// Loop
     while( true )
@@ -116,7 +118,7 @@ int main( int argc, char** argv )
 
 		else if ((char)c == 'g')
 		{
-			gFisheyeToEquirectangular.transform(src, dst, fisheyeAngle, radius, center);
+			gFisheyeToEquirectangular.apply(src, dst, fisheyeAngle, radius, center);
 			updateViz(0, 0);
 		}
 

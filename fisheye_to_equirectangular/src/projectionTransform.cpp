@@ -12,7 +12,20 @@
 
 using namespace pp;
 
-void FisheyeToEquirectangular::transform(const cv::Mat& src,
+FisheyeToEquirectangular::FisheyeToEquirectangular()
+    : paramFovRadians(0)
+    , paramRadius(0)
+    , paramCenter(cv::Point2i(0,0))
+    , paramEquirectWidth(-1)
+    , paramAperture(-1.0f)
+    , paramDownsample(-1)
+    , paramInterpolationMode(-1)
+    , paramSrcSize(cv::Size(0,0))
+{
+    
+}
+
+void FisheyeToEquirectangular::apply(const cv::Mat& src,
 	cv::Mat& dst,
 	const float& fovRadians,
 	const int& radius,
@@ -23,116 +36,110 @@ void FisheyeToEquirectangular::transform(const cv::Mat& src,
 	const int& interpolationMode)
 {
 	assert(fovRadians > 0);
-	mFovAngle = fovRadians;
+    
+    if(src.size() != paramSrcSize || radius != paramRadius || center != paramCenter)
+    {
+        cv::Rect fisheyeRect(0,0, 2 * radius, 2 * radius);
+        cv::Point2i centerToCorner(radius - src.cols / 2, radius - src.rows / 2);
+        cv::Rect srcRect(-center + centerToCorner, src.size());
+        mSrcTo = fisheyeRect & srcRect;
+        mWorkSrc.create(2 * radius, 2 * radius, src.type());
+        mSrcFrom = cv::Rect(mSrcTo + center - centerToCorner);
+    }
+    
+    mWorkSrc.setTo(cv::Scalar(0,0,0));
+    src(mSrcFrom).copyTo(mWorkSrc(mSrcTo));
+    
+    cv::Mat mSrcFromSmall;
+    cv::resize(mWorkSrc, mSrcFromSmall, mWorkSrc.size() / 4);
+    imshow("mSrcFrom", mSrcFromSmall);
+    
+    if (equirectWidth != paramEquirectWidth || fovRadians != paramFovRadians || radius != paramRadius)
+    {
+        if (equirectWidth == AUTO_EQUIRECT_W)
+        {
+            // 2 radius : mFovAngle = w : 2 PI
+            mEquirectSize.width = (int)((4.0f * M_PI * (float)radius) / fovRadians);
+            mEquirectSize.width = (mEquirectSize.width / 2) * 2;
+        }
+        else
+        {
+            mEquirectSize.width = equirectWidth;
+        }
+        
+        mEquirectSize.height = mEquirectSize.width / 2;
+    }
+    
+    if(aperture != paramAperture || fovRadians != paramFovRadians)
+    {
+        if(aperture == AUTO_APERTURE)
+        {
+            mWorkAperture = fovRadians;
+        }
+        else
+        {
+            mWorkAperture = std::min<float>(std::max<float>(1.0f, aperture), fovRadians);
+        }
+    }
+    
+    if (equirectWidth != paramEquirectWidth)
+    {
+        mMapX.create(mEquirectSize, CV_32FC1);
+        mMapY.create(mEquirectSize, CV_32FC1);
+        dst.create(mEquirectSize, src.type());
+    }
+    
+    if(equirectWidth != paramEquirectWidth || fovRadians != paramFovRadians || radius != paramRadius || aperture != paramAperture)
+    {
+        mMapX.setTo(0);
+        mMapY.setTo(0);
+        
+        for (int j = 0; j < mEquirectSize.height; j++)
+        {
+            for (int i = 0; i < mEquirectSize.width; i++)
+            {
+                // i is from 0 to dst.cols
+                // need to transform to -2 to +2 for equation
+                float x = (((float)i / mEquirectSize.width) - 0.5f) * 4.0f;
+                float y = (((float)j / mEquirectSize.height) - 0.5f) * -2.0f;
+                
+                float tetha = (float)M_PI * x * 0.5f;
+                
+                if (fabsf(tetha) >= (mWorkAperture * 0.5f))
+                    continue;
+                
+                float phi = (float)M_PI * y * 0.5f;
+                
+                float px = cosf(phi) * sinf(tetha);
+                float py = cosf(phi) * cosf(tetha);
+                float pz = sinf(phi);
+                
+                float tetha_1 = atan2f(pz, px);
+                float phi_1 = atan2f(sqrtf(px * px + pz * pz), py);
+                
+                float r = phi_1 / (fovRadians * 0.5f);
+                float u = (1 + r * cosf(tetha_1)) * 0.5f;
+                float v = (1 + r * sinf(tetha_1)) * 0.5f;
+                
+                u *= 2 * radius;
+                v = (1.0f - v) * radius * 2;
+                
+                mMapX.at<float>(j, i) = u;
+                mMapY.at<float>(j, i) = v;
+            }
+        }
+    }
 
-	mMaxEvenSrcDim = (std::max(src.cols, src.rows) / 2) * 2;
-	mMinRadius = 1;
-	mMaxRadius = mMaxEvenSrcDim / 2;
-	mMaxShift = mMaxRadius;
-
-	mWorkRadius = std::max<unsigned int>(std::min<unsigned int>(radius, mMaxRadius), mMinRadius);
-	cv::Point2i shiftSign(pp::sgn<int>(center.x), pp::sgn<int>(center.y));
-	cv::Point2i shiftAbs(abs(center.x), abs(center.y));
-	shiftAbs.x = std::max<unsigned int>(std::min<unsigned int>(shiftAbs.x, mMaxShift), 0);
-	shiftAbs.y = std::max<unsigned int>(std::min<unsigned int>(shiftAbs.y, mMaxShift), 0);
-	mWorkShift = cv::Point2i(shiftSign.x * shiftAbs.x, shiftSign.y * shiftAbs.y);
-	int canvasHalfSide = mMaxShift + mMaxRadius;
-	int canvasOrigin = canvasHalfSide - mMaxEvenSrcDim / 2;
-	int left = mWorkShift.x - mWorkRadius + canvasHalfSide;
-	int top = mWorkShift.y - mWorkRadius + canvasHalfSide;
 	
-	if (equirectWidth == AUTO_EQUIRECT_W)
-	{
-		// 2 radius : mFovAngle = w : 2 PI
-		mEquirectWidth = (int)((4.0f * M_PI * (float)mWorkRadius) / mFovAngle);
-		mEquirectWidth = (mEquirectWidth / 2) * 2;
-	}
-	else
-	{
-		mEquirectWidth = equirectWidth;
-	}
-
-	int equirectHeight = mEquirectWidth / 2;
-
-	mMapX.create(equirectHeight, mEquirectWidth, CV_32FC1);
-	mMapY.create(mMapX.size(), CV_32FC1);
-	mMapX.setTo(0);
-	mMapY.setTo(0);
-
-	for (int j = 0; j < equirectHeight; j++)
-	{
-		for (int i = 0; i < mEquirectWidth; i++)
-		{
-			// i is from 0 to dst.cols
-			// need to transform to -2 to +2 for equation
-			float x = (((float)i / mEquirectWidth) - 0.5f) * 4.0f;
-			float y = (((float)j / equirectHeight) - 0.5f) * -2.0f;
-
-			float tetha = (float)M_PI * x * 0.5f;
-
-			if (fabsf(tetha) >= (mFovAngle * 0.5f))
-				continue;
-
-			float phi = (float)M_PI * y * 0.5f;
-
-			float px = cosf(phi) * sinf(tetha);
-			float py = cosf(phi) * cosf(tetha);
-			float pz = sinf(phi);
-
-			float tetha_1 = atan2f(pz, px);
-			float phi_1 = atan2f(sqrtf(px * px + pz * pz), py);
-
-			float r = phi_1 / (mFovAngle * 0.5f);
-			float u = (1 + r * cosf(tetha_1)) * 0.5f;
-			float v = (1 + r * sinf(tetha_1)) * 0.5f;
-
-			u *= 2 * mWorkRadius;
-			v = (1.0f - v) * mWorkRadius * 2;
-
-			mMapX.at<float>(j, i) = u;
-			mMapY.at<float>(j, i) = v;
-		}
-	}
-
-
-	////
-
-	mWorkSrc.create(mMaxEvenSrcDim, mMaxEvenSrcDim, src.type());
-	mWorkSrc.setTo(cv::Scalar(0, 0, 0));
-	src.copyTo(mWorkSrc(cv::Rect((mMaxEvenSrcDim - src.cols) / 2, (mMaxEvenSrcDim - src.rows) / 2, src.cols, src.rows)));
-
-	mCanvas.create(2 * canvasHalfSide, 2 * canvasHalfSide, mWorkSrc.type());
-	mCanvas.setTo(cv::Scalar(0, 0, 0));
-	mWorkSrc.copyTo(mCanvas(cv::Rect(canvasOrigin, canvasOrigin, mWorkSrc.cols, mWorkSrc.rows)));
-	mWorkSrc.create(mWorkRadius * 2, mWorkRadius * 2, mCanvas.type());
-	mCanvas(cv::Rect(left, top, 2 * mWorkRadius, 2 * mWorkRadius)).copyTo(mWorkSrc);
-
-	dst.create(equirectHeight, mEquirectWidth, src.type());
+    dst.setTo(cv::Scalar(0,0,0));
 	cv::remap(mWorkSrc, dst, mMapX, mMapY, interpolationMode, cv::BORDER_CONSTANT, cv::Scalar(0, 0, 0));
+    
+    paramSrcSize = src.size();
+    paramFovRadians = fovRadians;
+    paramRadius = radius;
+    paramCenter = center;
+    paramEquirectWidth = equirectWidth;
+    paramAperture = aperture;
+    paramDownsample = downsample;
+    paramInterpolationMode = interpolationMode;
 }
-
-void FisheyeToEquirectangular::updateConstraints(const cv::Mat& src)
-{
-	mMaxEvenSrcDim = (std::max(src.cols, src.rows) / 2) * 2;
-	mMinRadius = 1;
-	mMaxRadius = mMaxEvenSrcDim / 2;
-	mMaxShift = mMaxRadius;
-}
-
-int FisheyeToEquirectangular::getMaxRadius(const cv::Mat& src)
-{
-	updateConstraints(src);
-	return mMaxRadius;
-}
-int FisheyeToEquirectangular::getMinRadius(const cv::Mat& src)
-{
-	updateConstraints(src);
-	return mMinRadius;
-}
-
-int FisheyeToEquirectangular::getMaxShift(const cv::Mat& src)
-{
-	updateConstraints(src);
-	return mMaxShift;
-}
-

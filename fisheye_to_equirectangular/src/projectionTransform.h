@@ -26,7 +26,7 @@ namespace pp
     class FisheyeToEquirectangular
     {
     public:
-		FisheyeToEquirectangular() {}
+        FisheyeToEquirectangular();
 		virtual ~FisheyeToEquirectangular() {}
         
         /** @brief Transforms fisheye image into equirectangular, reallocating arrays if needed
@@ -37,40 +37,37 @@ namespace pp
 		 @param aperture Radius relative to FOV radius. TODO: option to specify it as angle
 		 @param interpolationMode
          */
-        void transform(const cv::Mat& src,
+        void apply(const cv::Mat& src,
 			cv::Mat& dst,
 			const float& fovRadians,
-			const int& radius = AUTO_RADIUS,
+			const int& radius,
 			const cv::Point2i center = cv::Point2i(0,0),
 			const int& equirectWidth = AUTO_EQUIRECT_W,
 			const int& aperture = AUTO_APERTURE,
 			const int& downsample = 1,
 			const int& interpolationMode = CV_INTER_LINEAR);
-
-		int getMaxRadius(const cv::Mat& src);
-		int getMinRadius(const cv::Mat& src);
-		int getMaxShift(const cv::Mat& src);
         
     private:
         
-		void updateConstraints(const cv::Mat& src);
-
-		float mFovAngle;
-        int mFisheyeSide;
-        int mEquirectWidth;
-		int mMinRadius; // 1
-		int mMaxRadius; // will determinte max crop canvas side together with max shift
-		int mMaxShift; //max shift left or right or up or down of original center
-
-		// working src paramteres - can change over the course of transformations
-		int mMaxEvenSrcDim;
-		int mWorkRadius;
-		cv::Point2i mWorkShift;
+        float paramFovRadians;
+        int paramRadius;
+        cv::Point2i paramCenter;
+        int paramEquirectWidth;
+        int paramAperture;
+        int paramDownsample;
+        int paramInterpolationMode;
+        cv::Size paramSrcSize;
+        
+        //internals
+        cv::Rect mSrcFrom;
+        cv::Rect mSrcTo;
+        cv::Size mEquirectSize;
+        float mWorkAperture;
+        
         
         cv::Mat mMapX;
         cv::Mat mMapY;
 		cv::Mat mWorkSrc;
-		cv::Mat mCanvas; //helper canvas for the cropping operation
 
     };
     
