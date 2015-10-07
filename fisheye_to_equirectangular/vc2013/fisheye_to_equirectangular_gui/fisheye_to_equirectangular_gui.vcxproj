@@ -149,10 +149,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\argtable3.c" />
     <ClCompile Include="..\..\src\gui.cpp" />
     <ClCompile Include="..\..\src\projectionTransform.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\src\argtable3.h" />
     <ClInclude Include="..\..\src\projectionTransform.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

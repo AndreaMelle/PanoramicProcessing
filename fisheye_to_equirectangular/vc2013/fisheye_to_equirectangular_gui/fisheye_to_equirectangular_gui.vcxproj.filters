@@ -21,9 +21,15 @@
     <ClCompile Include="..\..\src\projectionTransform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\argtable3.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\projectionTransform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\argtable3.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
