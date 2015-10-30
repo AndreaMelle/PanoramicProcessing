@@ -1,0 +1,19 @@
+{
+  "name": "electron-app",
+  "description": "",
+  "main": "main.js",
+  "authors": [
+    "Andrea Melle <andrea.melle@happyfinish.com>"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/AndreaMelle/PanoramicProcessing",
+  "moduleType": [],
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

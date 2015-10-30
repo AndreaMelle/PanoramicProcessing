@@ -18,6 +18,7 @@ cv::Point2i center;
 int dstWidth;
 int guiDownsamples = 2;
 int shiftRes = 1;
+std::string out = "out";
 
 pp::FisheyeToEquirectangular* gFisheyeToEquirectangular;
 
@@ -54,7 +55,8 @@ int main( int argc, char** argv )
 
 
 	assert(argc >= 3);
-    cv::flip(imread(argv[1], 1 ), src, -1);
+	//cv::flip(imread(argv[1], 1 ), src, -1);
+	src = imread(argv[1], 1);
     
     //src = imread(argv[1], 1 );
 	
@@ -77,6 +79,9 @@ int main( int argc, char** argv )
 	if (argc >= 8)
 		radius = atoi(argv[7]);
 
+	if (argc >= 9)
+		out = std::string(argv[8]);
+
 	gFisheyeToEquirectangular = new pp::FisheyeToEquirectangular();
 
 	gFisheyeToEquirectangular->apply(src, dst, fisheyeAngle, radius, center);
@@ -98,9 +103,10 @@ int main( int argc, char** argv )
         { break; }
         else if ((char)c == 'o')
         {
-            std::stringstream ss;
-            ss << "equi_" << argv[1];
-            imwrite(ss.str(), dst);
+            //std::stringstream ss;
+            //ss << "equi_" << argv[1];
+			imwrite(out + ".png", dst);
+			std::cout << "out.png" << std::endl;
         }
         
         else if ((char)c == 'w')

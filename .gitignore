@@ -4,6 +4,9 @@ DerivedData
 temp/
 asset_workspace/
 builds/
+fisheye_to_equirectangular/electron-app/node_modules/
+fisheye_to_equirectangular/electron-app/distr/
+fisheye_to_equirectangular/node-bridge/build/
 
 ## Various settings
 *.pbxuser
