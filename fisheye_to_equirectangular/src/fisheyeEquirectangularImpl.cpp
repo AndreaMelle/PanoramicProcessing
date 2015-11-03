@@ -1,61 +1,10 @@
 //
-//  projectionTransform.cpp
-//  fisheye_to_equirectangular
-//
-//  Created by Andrea Melle on 05/10/2015.
-//  Copyright © 2015 Andrea Melle. All rights reserved.
-//
+//  fisheyeEquirectangularImpl.cpp
 
-#include "projectionTransform.h"
+#include "fisheyeEquirectangularImpl.h"
 #include <assert.h>
 
-
 using namespace pp;
-
-FisheyeToEquirectangular::FisheyeToEquirectangular()
-    : paramFovRadians(0)
-    , paramRadius(0)
-    , paramEquirectWidth(-1)
-    , paramAperture(-1.0f)
-{
-    
-}
-
-FisheyeToEquirectangular::~FisheyeToEquirectangular()
-{
-	mMapX.release();
-	mMapY.release();
-	mWorkSrc.release();
-}
-
-
-void FisheyeToEquirectangular::apply(const cv::Mat& src,
-	cv::Mat& dst,
-	const float& fovRadians,
-	const int& radius,
-	const cv::Point2i center,
-	const int& equirectWidth,
-	const float& aperture,
-	const int& downsample,
-	const int& interpolationMode)
-{
-	fisheye_to_equirectangular_crop(src, mWorkSrc, radius, center);
-
-    if (equirectWidth != paramEquirectWidth
-		|| fovRadians != paramFovRadians
-		|| radius != paramRadius
-		|| aperture != paramAperture)
-    {
-		fisheye_to_equirectangular_mapping(mMapX, mMapY, fovRadians, radius, equirectWidth, aperture);
-    }
-    
-	fisheye_to_equirectangular_image(mWorkSrc, dst, mMapX, mMapY, interpolationMode);
-    
-    paramFovRadians = fovRadians;
-    paramRadius = radius;
-    paramEquirectWidth = equirectWidth;
-    paramAperture = aperture;
-}
 
 void pp::fisheye_to_equirectangular_mapping(cv::Mat& mapx,
 	cv::Mat& mapy,

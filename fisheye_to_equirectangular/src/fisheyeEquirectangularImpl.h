@@ -1,13 +1,8 @@
 //
-//  projectionTransform.h
-//  fisheye_to_equirectangular
-//
-//  Created by Andrea Melle on 05/10/2015.
-//  Copyright © 2015 Andrea Melle. All rights reserved.
-//
+//  fisheyeEquirectangularImpl.h
 
-#ifndef projectionTransform_h
-#define projectionTransform_h
+#ifndef __FISHEYE_EQUIRECTANGULAR_IMPL_H__
+#define __FISHEYE_EQUIRECTANGULAR_IMPL_H__
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -21,34 +16,6 @@
 
 namespace pp
 {
-    class FisheyeToEquirectangular
-    {
-    public:
-        FisheyeToEquirectangular();
-		virtual ~FisheyeToEquirectangular();
-        
-        void apply(const cv::Mat& src,
-			cv::Mat& dst,
-			const float& fovRadians,
-			const int& radius,
-			const cv::Point2i center = cv::Point2i(0,0),
-			const int& equirectWidth = AUTO_EQUIRECT_W,
-			const float& aperture = AUTO_APERTURE,
-			const int& downsample = 1,
-			const int& interpolationMode = CV_INTER_LINEAR);
-        
-    private:
-        
-        float paramFovRadians;
-        int paramRadius;
-        int paramEquirectWidth;
-        float paramAperture;
-        
-        cv::Mat mMapX;
-        cv::Mat mMapY;
-		cv::Mat mWorkSrc;
-    };
-
 	/** @brief Produces the precomputed tables to remap fisheye into equirectangular
 
 	@param mapx destination map for x coordinates, reallocated if needed
@@ -99,4 +66,4 @@ namespace pp
     }
 }
 
-#endif /* projectionTransform_h */
+#endif // __FISHEYE_EQUIRECTANGULAR_IMPL_H__
