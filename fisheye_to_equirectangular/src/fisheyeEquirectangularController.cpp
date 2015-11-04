@@ -16,6 +16,7 @@ FisheyeEquirectangularController::FisheyeEquirectangularController()
 	, paramCenter(cv::Point2i(0, 0))
 	, paramDownsample(1)
 	, paramInterpolationMode(CV_INTER_LINEAR)
+	, mAutoApplyOnChange(false)
 {
     
 }
@@ -58,33 +59,45 @@ void FisheyeEquirectangularController::setParamFovRadians(const float& inFovRadi
 {
 	paramFovRadians = inFovRadians;
 	mParamDirtyFlag = true;
+	this->notify("fovRadians", paramFovRadians);
+	if (mAutoApplyOnChange) this->apply();
 }
 
 void FisheyeEquirectangularController::setParamFovDegrees(const float& inFovDegrees)
 {
 	paramFovRadians = inFovDegrees * (float)M_PI / 180.0f;
 	mParamDirtyFlag = true;
+	this->notify("fovRadians", paramFovRadians);
+	if (mAutoApplyOnChange) this->apply();
 }
 
 void FisheyeEquirectangularController::setParamRadius(const int& inRadius)
 {
 	paramRadius = inRadius;
 	mParamDirtyFlag = true;
+	this->notify("radius", paramRadius);
+	if (mAutoApplyOnChange) this->apply();
 }
 
 void FisheyeEquirectangularController::setParamEquirectWidth(const int& inEquirectWidth)
 {
 	paramEquirectWidth = inEquirectWidth;
 	mParamDirtyFlag = true;
+	this->notify("equirectWidth", paramEquirectWidth);
+	if (mAutoApplyOnChange) this->apply();
 }
 
 void FisheyeEquirectangularController::setParamAperture(const float& inAperture)
 {
 	paramAperture = inAperture;
 	mParamDirtyFlag = true;
+	this->notify("aperture", paramAperture);
+	if (mAutoApplyOnChange) this->apply();
 }
 
-void FisheyeEquirectangularController::setParamCenter(const cv::Point2f& inCenter)
+void FisheyeEquirectangularController::setParamCenter(const cv::Point2i& inCenter)
 {
 	paramCenter = inCenter;
+	this->notify("center", paramCenter);
+	if (mAutoApplyOnChange) this->apply();
 }

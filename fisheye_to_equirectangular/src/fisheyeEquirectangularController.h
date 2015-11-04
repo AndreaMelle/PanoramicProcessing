@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
+#include "ContollerSubject.h"
 
 #define AUTO_EQUIRECT_W 0
 #define AUTO_APERTURE 0
@@ -25,7 +26,7 @@ namespace pp
 
 	} CVFlipCode;
 
-    class FisheyeEquirectangularController
+    class FisheyeEquirectangularController : public ControllerSubject
     {
     public:
 		FisheyeEquirectangularController();
@@ -39,7 +40,7 @@ namespace pp
 		void setParamRadius(const int& inRadius);
 		void setParamEquirectWidth(const int& inEquirectWidth);
 		void setParamAperture(const float& inAperture);
-		void setParamCenter(const cv::Point2f& inCenter);
+		void setParamCenter(const cv::Point2i& inCenter);
         
         void apply();
         
@@ -54,6 +55,8 @@ namespace pp
 		int paramInterpolationMode; //TODO: No setter yet
 
 		bool mParamDirtyFlag;
+
+		bool mAutoApplyOnChange;
         
         cv::Mat mMapX;
         cv::Mat mMapY;

@@ -149,9 +149,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
+    <ClInclude Include="..\..\src\ContollerSubject.h" />
     <ClInclude Include="..\..\src\FisheyeEquirectangularDll.h" />
     <ClInclude Include="..\..\src\fisheyeEquirectangularImpl.h" />
     <ClInclude Include="..\..\src\fisheyeEquirectangularController.h" />
