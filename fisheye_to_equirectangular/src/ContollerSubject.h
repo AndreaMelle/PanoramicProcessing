@@ -3,10 +3,14 @@
 
 #include <memory>
 #include <algorithm>
+#include <vector>
+#include "opencv2\opencv.hpp"
 
 namespace pp
 {
 	//TODO: make this using templates
+
+	//TODO: use a mechanism where the Observer can subscribe only to certain topics!
 
 	class ControllerSubject;
 
@@ -30,6 +34,10 @@ namespace pp
 		virtual void onControllerParamUpdate(std::weak_ptr<ControllerSubject> sender, const std::string& paramName, const float& paramValue) {}
 		virtual void onControllerParamUpdate(std::weak_ptr<ControllerSubject> sender, const std::string& paramName, const int& paramValue) {}
 		virtual void onControllerParamUpdate(std::weak_ptr<ControllerSubject> sender, const std::string& paramName, const cv::Point2i& paramValue) {}
+
+		virtual void onControllerSourceUpdate(std::weak_ptr<ControllerSubject> sender) {}
+		virtual void onControllerResultUpdate(std::weak_ptr<ControllerSubject> sender) {}
+
 	};
 
 	class ControllerSubject : std::enable_shared_from_this<ControllerSubject>

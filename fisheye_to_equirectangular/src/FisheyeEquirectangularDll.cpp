@@ -3,6 +3,7 @@
 
 #include "fisheyeEquirectangularDll.h"
 #include "fisheyeEquirectangularController.h"
+#include "fisheyeWorkView.h"
 
 using namespace pp;
 
@@ -17,6 +18,20 @@ void FisheyeEquirectangular::DestroyController(FisheyeEquirectangularController*
 	{
 		delete controller;
 		controller = nullptr;
+	}
+}
+
+FisheyeWorkView* FisheyeEquirectangular::CreateWorkView()
+{
+	return new FisheyeWorkView();
+}
+
+void FisheyeEquirectangular::DestroyWorkView(FisheyeWorkView* view)
+{
+	if (view != nullptr)
+	{
+		delete view;
+		view = nullptr;
 	}
 }
 

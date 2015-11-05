@@ -5,6 +5,7 @@
 #define __FISHEYE_EQUIRECTANGULAR_CONTROLLER_H__
 
 #define _USE_MATH_DEFINES
+#include "FisheyeEquirectangularDll.h"
 #include <cmath>
 #include <stdio.h>
 #include "opencv2/highgui/highgui.hpp"
@@ -32,15 +33,23 @@ namespace pp
 		FisheyeEquirectangularController();
 		virtual ~FisheyeEquirectangularController();
 
-		void open(const char* filename, CVFlipCode flip = CVFlipCode::FLIP_NONE);
-		const cv::Mat& get() const { return mDst; }
+		FISHEYEEQUIRECTANGULARDLL_API void open(const char* filename, CVFlipCode flip = CVFlipCode::FLIP_NONE);
+
+		const cv::Mat& getResult() const { return mDst; }
+		const cv::Mat& getSource() const { return mSrc; }
 
 		void setParamFovRadians(const float& inFovRadians);
 		void setParamFovDegrees(const float& inFovDegrees);
-		void setParamRadius(const int& inRadius);
+		void FISHEYEEQUIRECTANGULARDLL_API setParamRadius(const int& inRadius);
 		void setParamEquirectWidth(const int& inEquirectWidth);
 		void setParamAperture(const float& inAperture);
 		void setParamCenter(const cv::Point2i& inCenter);
+
+		float getParamFovRadians() const { return paramFovRadians; }
+		int getParamRadius() const { return paramRadius; }
+		int getParamEquirectWidth() const { return paramEquirectWidth; }
+		float getParamAperture() const { return paramAperture; }
+		cv::Point2i getParamCenter() const { return paramCenter; }
         
         void apply();
         
@@ -64,6 +73,9 @@ namespace pp
 
 		cv::Mat mSrc;
 		cv::Mat mDst;
+
+		
+
     };
 
 	

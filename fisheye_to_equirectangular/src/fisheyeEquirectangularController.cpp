@@ -38,8 +38,11 @@ void FisheyeEquirectangularController::open(const char* filename, CVFlipCode fli
 	}
 	else
 	{
-		cv::imread(filename, 1);
+		mSrc = cv::imread(filename, 1);
 	}
+
+	if (mAutoApplyOnChange) this->apply();
+
 }
 
 void FisheyeEquirectangularController::apply()
